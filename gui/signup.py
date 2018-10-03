@@ -99,7 +99,7 @@ class SignUpWindow(QMainWindow):
 
         #self.okButton.clicked.connect(self.connectDB)
         self.okButton.clicked.connect(self.Reg)
-        self.cancelButton.clicked.connect(self.connectDB)
+        self.cancelButton.clicked.connect(self.close)
 
         self.setCentralWidget(self.centralwidget)
 
@@ -179,17 +179,17 @@ class SignUpWindow(QMainWindow):
 
         #print(type(mylogin))
 
-        #con = mdb.connect(host='localhost', user='root', password='root', db='ibks')
+        #con = mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
         try:
-            con=mdb.connect(host='localhost', user='root', password='root', db='ibks')
+            con=mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
             with con.cursor() as cur:
-                sql="INSERT INTO users(login,password) VALUES(%s, %s)"%(''.join(mylogin),''.join(mypassword))
+                sql="INSERT INTO users(login,password) VALUES('%s', '%s')"%(''.join(mylogin),''.join(mypassword))
                 cur.execute(sql)
                 QMessageBox.about(self, 'Регистрация','Поздравляем,\n Вы зарегистрированы!')
-
+                cur.close()
         except mdb.Error as e:
             QMessageBox.about(self, 'Регистрация', 'Ошибка подключения к БД!')
-
+            con.close()
 
 def run():
     app = QtWidgets.QApplication(sys.argv)
