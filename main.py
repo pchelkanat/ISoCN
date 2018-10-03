@@ -1,4 +1,4 @@
-from gui.Main import run
+from gui.signup import run
 
 if __name__ == "__main__":
     run()
