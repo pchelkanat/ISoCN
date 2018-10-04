@@ -1,5 +1,7 @@
 import sys
 
+import hashlib
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
@@ -7,8 +9,7 @@ from PyQt5.QtWidgets import QMessageBox, QMainWindow, QStackedLayout
 
 import pymysql as mdb
 
-
-
+from prog.hashing import computeMD5hash
 
 mdb.install_as_MySQLdb()
 
@@ -164,6 +165,8 @@ class SignUpWindow(QMainWindow):
         mylogin=self.loginKey.text()
         mypassword=self.passKey.text()
 
+        mymd5=computeMD5hash(mypassword)
+
         """
         myhost = MainWindow.hostKey.text()
         myuser = MainWindow.userKey.text()
@@ -176,7 +179,7 @@ class SignUpWindow(QMainWindow):
         try:
             con=mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
             with con.cursor() as cur:
-                sql="INSERT INTO users(login,password) VALUES('%s', '%s')"%(''.join(mylogin),''.join(mypassword))
+                sql="INSERT INTO users(login,password) VALUES('%s', '%s')"%(''.join(mylogin),''.join(mymd5))
                 cur.execute(sql)
                 QMessageBox.about(self, 'Регистрация','Поздравляем,\n Вы зарегистрированы!')
                 cur.close()
