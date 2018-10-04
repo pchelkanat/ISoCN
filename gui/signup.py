@@ -6,6 +6,10 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMessageBox, QMainWindow, QStackedLayout
 
 import pymysql as mdb
+
+
+
+
 mdb.install_as_MySQLdb()
 
 class SignUpWindow(QMainWindow):
@@ -97,7 +101,6 @@ class SignUpWindow(QMainWindow):
         self.cancelButton.setText("Отмена")
         self.horizontalLayout_2.addWidget(self.cancelButton)
 
-        #self.okButton.clicked.connect(self.connectDB)
         self.okButton.clicked.connect(self.Reg)
         self.cancelButton.clicked.connect(self.close)
 
@@ -145,15 +148,6 @@ class SignUpWindow(QMainWindow):
         self.helpMenu.addAction(self.HelpAction)
         self.helpMenu.addAction(self.AboutAction)
 
-    def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'Выход', "Вы действительно хотите покинуть программу?",
-                                     QMessageBox.Yes | QMessageBox.No)
-        if reply == QMessageBox.Yes:
-
-            event.accept()
-        else:
-            event.ignore()
-
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
             self.close()
@@ -165,21 +159,20 @@ class SignUpWindow(QMainWindow):
     def help(self):
         QMessageBox.information(self, 'Помощь', "??")
 
-    def connectDB(self):
-        try:
-            db = mdb.connect(host='localhost', user='root', password='root', db='ibks')
-            QMessageBox.about(self, 'Соединение', 'Вы подключились к БД!!!:)')
-        except mdb.Error as e:
-            QMessageBox.about(self, 'Соединение', 'Ошибка подключения!')
-            db.close()
 
     def Reg(self):
         mylogin=self.loginKey.text()
         mypassword=self.passKey.text()
 
-        #print(type(mylogin))
+        """
+        myhost = MainWindow.hostKey.text()
+        myuser = MainWindow.userKey.text()
+        mypwd = MainWindow.pwdKey.text()
+        mydb = MainWindow.dbKey.text()
+        """
+        #print(myhost,myuser,type(myhost))
 
-        #con = mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
+        
         try:
             con=mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
             with con.cursor() as cur:
@@ -188,10 +181,11 @@ class SignUpWindow(QMainWindow):
                 QMessageBox.about(self, 'Регистрация','Поздравляем,\n Вы зарегистрированы!')
                 cur.close()
         except mdb.Error as e:
-            QMessageBox.about(self, 'Регистрация', 'Ошибка подключения к БД!')
+            QMessageBox.about(self, 'Регистрация', 'Ошибка подключения к базе данных!')
             con.close()
 
-def run():
+
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     GUI = SignUpWindow()
     sys.exit(app.exec_())
