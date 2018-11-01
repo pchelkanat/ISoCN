@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QMessageBox, QMainWindow, QStackedLayout
 
 import pymysql as mdb
 
+#from gui.mainwin import MainWindow
 from prog.hashing import computeMD5hash
 
 mdb.install_as_MySQLdb()
@@ -167,15 +168,6 @@ class SignUpWindow(QMainWindow):
 
         mymd5=computeMD5hash(mypassword)
 
-        """
-        myhost = MainWindow.hostKey.text()
-        myuser = MainWindow.userKey.text()
-        mypwd = MainWindow.pwdKey.text()
-        mydb = MainWindow.dbKey.text()
-        """
-        #print(myhost,myuser,type(myhost))
-
-        
         try:
             con=mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
             with con.cursor() as cur:
