@@ -198,7 +198,7 @@ class MainWindow(QMainWindow):
     def autoOpen(self):
         self.open= SignInWindow()
 
-def run():
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     GUI = MainWindow()
     sys.exit(app.exec_())
