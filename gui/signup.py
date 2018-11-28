@@ -1,18 +1,14 @@
 import sys
 
-import hashlib
-
+import pymysql
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QMessageBox, QMainWindow, QStackedLayout
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMessageBox, QMainWindow
 
-import pymysql as mdb
-
-#from gui.mainwin import MainWindow
+# from gui.mainwin import MainWindow
 from prog.hashing import computeMD5hash
 
-mdb.install_as_MySQLdb()
 
 class SignUpWindow(QMainWindow):
     def __init__(self):
@@ -161,23 +157,35 @@ class SignUpWindow(QMainWindow):
     def help(self):
         QMessageBox.information(self, 'Помощь', "??")
 
-
     def Reg(self):
-        mylogin=self.loginKey.text()
-        mypassword=self.passKey.text()
-
-        mymd5=computeMD5hash(mypassword)
+        mylogin = self.loginKey.text()
+        mypassword = self.passKey.text()
+        mymd5 = computeMD5hash(mypassword)
+        print(type(mylogin),type(mymd5))
+        con = pymysql.connect(host='localhost',
+                              user='root',
+                              password='root',
+                              port=3306,
+                              db='ibks',
+                              autocommit=True)
 
         try:
-            con=mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
             with con.cursor() as cur:
-                sql="INSERT INTO users(login,password) VALUES('%s', '%s')"%(''.join(mylogin),''.join(mymd5))
-                cur.execute(sql)
-                QMessageBox.about(self, 'Регистрация','Поздравляем,\n Вы зарегистрированы!')
-                cur.close()
-        except mdb.Error as e:
-            QMessageBox.about(self, 'Регистрация', 'Ошибка подключения к базе данных!')
-            con.close()
+                sql = "SELECT * FROM users WHERE login=%s"
+                cur.execute(sql % mylogin)
+                result = cur.fetchone()
+                print(result)
+                if result == None:
+                    sql = "INSERT INTO users (login, password) VALUES (%s, %s)"
+                    cur.execute(sql% (mylogin, mymd5))
+                    QMessageBox.about(self, 'Регистрация', 'Вы успешно зарегистрированы!')
+
+                else:
+                    QMessageBox.about(self, 'Регистрация', 'Такой пользователь уже существует!')
+                #cur.close()
+        except pymysql.Error as e:
+            QMessageBox.about(self, 'Регистрация', 'Ошибка!\n'+str(e.args))
+        con.close()
 
 
 if __name__ == "__main__":

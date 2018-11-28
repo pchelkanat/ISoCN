@@ -157,14 +157,20 @@ class SignInWindow(QMainWindow):
         mymd5 = computeMD5hash(self.passKey.text())
 
         #check_user
-        try:
-            con = mdb.connect(host='localhost', user='root', password='root', db='ibks', autocommit=True)
-            with con.cursor() as cur:
-                sql = "SELECT password from users WHERE login=%s" % (str(mylogin))
-                cur.execute(sql)
-                result = cur.fetchone()# id, login, password -> [2]
 
-                if result!="None":
+        con = mdb.connect(host='localhost',
+                          user='root',
+                          password='root',
+                          db='ibks',
+                          autocommit=True)
+        try:
+            with con.cursor() as cur:
+                sql = "SELECT password from users WHERE login=%s"
+                cur.execute(sql % (''.join(mylogin)))
+                result = cur.fetchone()
+                print(result)
+
+                if result!=None:
                     key = generatePrime(16)
 
                     userhash = computeMD5hash(int(mymd5, 16) + key) #относитеьно клиента
@@ -180,7 +186,7 @@ class SignInWindow(QMainWindow):
                     QMessageBox.about(self, 'Авторизация', "Пользователь не найден")
                 cur.close()
         except mdb.Error as e:
-            QMessageBox.about(self, 'Авторизация', 'Ошибка подключения к базе данных!')
+            QMessageBox.about(self, 'Авторизация', 'Ошибка!\n'+str(e.args))
             con.close()
 
 

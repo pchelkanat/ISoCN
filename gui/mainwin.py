@@ -191,7 +191,6 @@ class MainWindow(QMainWindow):
             QMessageBox.about(self, 'Соединение', 'Вы подключены:)')
         except mdb.Error as e:
             QMessageBox.about(self, 'Соединение', 'Ошибка подключения!')
-            db.close()
 
     def regOpen(self):
         self.open = SignUpWindow()
