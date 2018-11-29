@@ -162,6 +162,7 @@ class SignUpWindow(QMainWindow):
         mypassword = self.passKey.text()
         mymd5 = computeMD5hash(mypassword)
         print(type(mylogin),type(mymd5))
+
         con = pymysql.connect(host='localhost',
                               user='root',
                               password='root',
@@ -171,17 +172,17 @@ class SignUpWindow(QMainWindow):
 
         try:
             with con.cursor() as cur:
-                sql = "SELECT * FROM users WHERE login=%s"
-                cur.execute(sql % mylogin)
+                cur.execute("SELECT login FROM users WHERE login=%s", mylogin)
                 result = cur.fetchone()
                 print(result)
                 if result == None:
-                    sql = "INSERT INTO users (login, password) VALUES (%s, %s)"
-                    cur.execute(sql% (mylogin, mymd5))
+
+                    cur.execute("INSERT INTO users (login, password) VALUES (%s, %s)",(mylogin, mymd5))
                     QMessageBox.about(self, 'Регистрация', 'Вы успешно зарегистрированы!')
 
                 else:
                     QMessageBox.about(self, 'Регистрация', 'Такой пользователь уже существует!')
+
                 #cur.close()
         except pymysql.Error as e:
             QMessageBox.about(self, 'Регистрация', 'Ошибка!\n'+str(e.args))

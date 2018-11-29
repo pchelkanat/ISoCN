@@ -165,8 +165,8 @@ class SignInWindow(QMainWindow):
                           autocommit=True)
         try:
             with con.cursor() as cur:
-                sql = "SELECT password from users WHERE login=%s"
-                cur.execute(sql % (''.join(mylogin)))
+
+                cur.execute("SELECT password from users WHERE login=%s",mylogin)
                 result = cur.fetchone()
                 print(result)
 
