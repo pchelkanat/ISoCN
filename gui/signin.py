@@ -1,5 +1,6 @@
 import sys
 
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
@@ -7,10 +8,9 @@ from PyQt5.QtWidgets import QMessageBox, QMainWindow, QStackedLayout
 
 from prog.SSPT import generatePrime
 from prog.hashing import computeMD5hash
+from Crypto.Util import number
 
 import pymysql as mdb
-
-mdb.install_as_MySQLdb()
 
 class SignInWindow(QMainWindow):
     # class MainWindow(object):
@@ -155,7 +155,7 @@ class SignInWindow(QMainWindow):
         #mypassword = self.passKey.text()
 
         mymd5 = computeMD5hash(self.passKey.text())
-
+        #print(type(mymd5))
         #check_user
 
         con = mdb.connect(host='localhost',
@@ -168,15 +168,15 @@ class SignInWindow(QMainWindow):
 
                 cur.execute("SELECT password from users WHERE login=%s",mylogin)
                 result = cur.fetchone()
-                print(result)
+                #print(result[0],type(result[0]))
 
                 if result!=None:
-                    key = generatePrime(16)
-
-                    userhash = computeMD5hash(int(mymd5, 16) + key) #относитеьно клиента
-                    dbhash =computeMD5hash(int(result[2], 16) + key) #относительно сервера
-                    print(userhash, type(userhash))
-                    print(dbhash, type(dbhash))
+                    key = number.getPrime(128)
+                    print(key)
+                    userhash = computeMD5hash(str(int(mymd5, 16) + key)) #относитеьно клиента
+                    dbhash =computeMD5hash(str(int(result[0], 16) + key)) #относительно сервера
+                    #print(userhash, type(userhash))
+                    #print(dbhash, type(dbhash))
 
                     if userhash==dbhash:
                         QMessageBox.about(self, 'Авторизация',"Успешно!")
@@ -184,7 +184,7 @@ class SignInWindow(QMainWindow):
                         QMessageBox.about(self, 'Авторизация', "Неверный пароль!")
                 else:
                     QMessageBox.about(self, 'Авторизация', "Пользователь не найден")
-                cur.close()
+                #cur.close()
         except mdb.Error as e:
             QMessageBox.about(self, 'Авторизация', 'Ошибка!\n'+str(e.args))
             con.close()
