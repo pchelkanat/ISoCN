@@ -1,16 +1,15 @@
 import sys
 
-
-from PyQt5 import QtCore, QtWidgets, QtGui
+import pymysql as mdb
+from Crypto.Util.number import getPrime
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QMessageBox, QMainWindow, QStackedLayout
+from PyQt5.QtWidgets import QMessageBox, QMainWindow
 
-from prog.SSPT import generatePrime
+from prog.DH import gen_KM, receive_CxCy, RC4_enc
 from prog.hashing import computeMD5hash
-from Crypto.Util import number
 
-import pymysql as mdb
 
 class SignInWindow(QMainWindow):
     # class MainWindow(object):
@@ -152,11 +151,11 @@ class SignInWindow(QMainWindow):
 
     def Authorization(self):
         mylogin = self.loginKey.text()
-        #mypassword = self.passKey.text()
+        # mypassword = self.passKey.text()
 
         mymd5 = computeMD5hash(self.passKey.text())
-        #print(type(mymd5))
-        #check_user
+        # print(type(mymd5))
+        # check_user
 
         con = mdb.connect(host='localhost',
                           user='root',
@@ -166,32 +165,70 @@ class SignInWindow(QMainWindow):
         try:
             with con.cursor() as cur:
 
-                cur.execute("SELECT password from users WHERE login=%s",mylogin)
+                cur.execute("SELECT password from users WHERE login=%s", mylogin)
                 result = cur.fetchone()
-                #print(result[0],type(result[0]))
+                # print(result[0],type(result[0]))
 
-                if result!=None:
-                    key = number.getPrime(128)
+                if result != None:
+                    key = getPrime(128)
                     print(key)
-                    userhash = computeMD5hash(str(int(mymd5, 16) + key)) #относитеьно клиента
-                    dbhash =computeMD5hash(str(int(result[0], 16) + key)) #относительно сервера
-                    #print(userhash, type(userhash))
-                    #print(dbhash, type(dbhash))
+                    userhash = computeMD5hash(str(int(mymd5, 16) + key))  # относитеьно клиента
+                    dbhash = computeMD5hash(str(int(result[0], 16) + key))  # относительно сервера
+                    # print(userhash, type(userhash))
+                    # print(dbhash, type(dbhash))
 
-                    if userhash==dbhash:
-                        QMessageBox.about(self, 'Авторизация',"Успешно!")
+                    if userhash == dbhash:
+                        QMessageBox.about(self, 'Авторизация', "Успешно!")
                     else:
                         QMessageBox.about(self, 'Авторизация', "Неверный пароль!")
                 else:
                     QMessageBox.about(self, 'Авторизация', "Пользователь не найден")
-                #cur.close()
+                # cur.close()
         except mdb.Error as e:
-            QMessageBox.about(self, 'Авторизация', 'Ошибка!\n'+str(e.args))
+            QMessageBox.about(self, 'Авторизация', 'Ошибка!\n' + str(e.args))
             con.close()
 
+    def AuthorizationDH(self):
+        mylogin = self.loginKey.text()
+        mypass = computeMD5hash(self.passKey.text())
+
+        con = mdb.connect(host='localhost',
+                          user='root',
+                          password='root',
+                          db='ibks',
+                          autocommit=True)
+        try:
+            with con.cursor() as cur:
+
+                cur.execute("SELECT password from users WHERE login=%s", mylogin)
+                result = cur.fetchone()
+                # print(result[0],type(result[0]))
+
+                if result != None:
+                    bits = 128
+                    n, q = getPrime(bits), getPrime(bits)
+                    print("nq", n, q)
+                    x, M = gen_KM(n, q)
+                    y, K = gen_KM(n, q)
+                    print("xy", x, y)
+                    print("KM", K, M)
+                    mykeyA = receive_CxCy(K, x, n)
+                    mykeyB = receive_CxCy(M, y, n)
+
+                    forClient = RC4_enc(mykeyA, mypass, bits)
+                    forServer = RC4_enc(mykeyB, result, bits)
+                    # newtext = RC4_dec(mykeyB, cryptotext, bits)
 
 
-
+                    if forClient == forServer:
+                        QMessageBox.about(self, 'Авторизация', "Успешно!")
+                    else:
+                        QMessageBox.about(self, 'Авторизация', "Неверный пароль!")
+                else:
+                    QMessageBox.about(self, 'Авторизация', "Пользователь не найден")
+        except mdb.Error as e:
+            QMessageBox.about(self, 'Авторизация', 'Ошибка!\n' + str(e.args))
+            con.close()
 
 
 if __name__ == "__main__":
