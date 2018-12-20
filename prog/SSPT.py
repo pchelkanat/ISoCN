@@ -2,8 +2,10 @@ import math
 from math import gcd
 from random import randrange
 
-
 # банально по делителям, для проверки свидетеля a
+from Crypto.Util import number
+
+
 def is_prime(a):
     """
     for i in range (2, a):
@@ -122,6 +124,10 @@ def generatePrime(keysize):
 
 if __name__ == '__main__':
 
-    keysize = 16
-    x = generatePrime(keysize)
-    print(x, isPrimeSS(x))
+    keysize = 128
+    #x = generatePrime(keysize)
+    x= number.getPrime(keysize)
+
+    print(x)
+    print(is_prime(x))
+

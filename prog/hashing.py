@@ -1,5 +1,7 @@
 import hashlib
 
+from Crypto.Util.number import getPrime
+
 from prog.SSPT import generatePrime
 
 
@@ -11,9 +13,9 @@ def computeMD5hash(my_string):
 
 if __name__ == "__main__":
 
-    nn=computeMD5hash("sdas")
+    nn=computeMD5hash(23)
     print(nn, type(nn))
-    x= generatePrime(16)
+    x= getPrime(128)
     print(x)
     res=int(nn,16)+x
     print(res)
